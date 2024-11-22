@@ -1,11 +1,18 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils.translation import gettext_lazy as _
 
 
 class Machine(models.Model):
-    id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
-    status = models.CharField(max_length=50, default='available')
+    class StatusEnum(models.TextChoices):
+        ACTIVE = 'ACTVIE', _('Active')
+        BOOKED = 'BOOKED', _('Booked')
+        REINSTALLING = 'REINSTALLING', _('Reinstalling')
+
+    name = models.CharField(max_length=50, unique=True)
+    status = models.CharField(
+        max_length=50, choices=StatusEnum.choices, default=StatusEnum.ACTIVE
+    )
     ipv4 = models.GenericIPAddressField(max_length=50)
     ipv6 = models.GenericIPAddressField(max_length=50, blank=True, null=True)
     password = models.CharField(max_length=50)
@@ -21,7 +28,6 @@ class Machine(models.Model):
 
 
 class Booking(models.Model):
-    id = models.AutoField(primary_key=True)
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     bookedBy = models.ForeignKey(User, on_delete=models.CASCADE)
     bookedFrom = models.DateTimeField()
