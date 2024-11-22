@@ -2,7 +2,9 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-i^upzz&8j5dkbxcfujn$#x4sx%tts^ker&()sglcjb$(8(=tsf'
+SECRET_KEY = (
+    'django-insecure-i^upzz&8j5dkbxcfujn$#x4sx%tts^ker&()sglcjb$(8(=tsf'
+)
 
 DEBUG = True
 
@@ -81,7 +83,7 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
 }
 
 STATIC_URL = 'static/'

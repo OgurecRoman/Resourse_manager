@@ -9,7 +9,7 @@ class MachineViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Machine.objects.all()
-        status = self.request.query_params.get("status")
+        status = self.request.query_params.get('status')
         if status is not None:
             queryset = queryset.filter(status=status)
         return queryset
