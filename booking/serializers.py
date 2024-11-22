@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Machine
+from .models import Machine, Booking
 
 
 class MachineSerializer(serializers.ModelSerializer):
@@ -17,4 +17,15 @@ class MachineSerializer(serializers.ModelSerializer):
             'bandwidth',
             'operatingSystem',
             'status',
+        )
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = (
+            'machine',
+            'bookedBy',
+            'bookedFrom',
+            'bookedUntil',
         )

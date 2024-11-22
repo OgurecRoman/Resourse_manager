@@ -1,10 +1,12 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.auth.models import User
 
 
 class Machine(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, blank=False)
     status = models.CharField(max_length=50, default='available')
     ipv4 = models.GenericIPAddressField(max_length=50)
     ipv6 = models.GenericIPAddressField(max_length=50, blank=True, null=True)
@@ -24,5 +26,5 @@ class Booking(models.Model):
     id = models.AutoField(primary_key=True)
     machine = models.ForeignKey(Machine, on_delete=models.CASCADE)
     bookedBy = models.ForeignKey(User, on_delete=models.CASCADE)
-    bookedFrom = models.DateTimeField()
-    bookedUntil = models.DateTimeField()
+    bookedFrom = models.DateTimeField(default=datetime.now)
+    bookedUntil = models.DateTimeField(default=datetime.now)
