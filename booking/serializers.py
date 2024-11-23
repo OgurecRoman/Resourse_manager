@@ -25,7 +25,7 @@ class MachineSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ['id', 'machine', 'bookedUntil', 'bookedFrom']
+        fields = ['id', 'bookedBy', 'machine', 'bookedUntil', 'bookedFrom']
 
     def get_permissions(self):
         if self.action == 'list':
