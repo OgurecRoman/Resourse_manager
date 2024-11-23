@@ -1,5 +1,3 @@
-from platform import machine
-
 from django.db.models import Q
 import datetime
 from django.contrib.auth.models import Group, User
@@ -20,57 +18,75 @@ from .permissions import IsOwner, IsSuperUser
 class MachineViewSet(viewsets.ModelViewSet):
     queryset = Machine.objects.all()
     serializer_class = MachineSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get_queryset(self):
-        start = self.request.query_params.get('start')
-        end = self.request.query_params.get('end')
+    # мы игнорируем то состояние, когда человек без проверки на то, что
+    # машина свободна её бргнирует.
+    @action(detail=True, methods=['get', 'post'])
+    def book(self, request, pk):
+        start = request.query_params.get('start', '')
+        end = request.query_params.get('end', '')
+        try:
+            start_datetime = datetime.datetime.strptime(
+                start, '%Y-%m-%d-%H:%M'
+            )
+            end_datetime = datetime.datetime.strptime(end, '%Y-%m-%d-%H:%M')
+        except ValueError:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        if start_datetime and end_datetime:
+            try:
+                machine = Machine.objects.get(id=pk)
+            except Machine.DoesNotExist:
+                return Response(status.HTTP_404_NOT_FOUND)
+            machine.status = Machine.StatusEnum.BOOKED
+            machine.save()
+
+            new_booking = Booking.objects.create(
+                machine=machine,
+                bookedBy=request.user,
+                bookedFrom=start_datetime,
+                bookedUntil=end_datetime,
+            )
+            new_booking.save()
+            serializer = BookingSerializer(new_booking, many=False)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        return {}
+
+    @action(detail=False, methods=['GET'])
+    def available(self, request):
+        """Gets all machines that are not booked in specified time interval."""
+        start = request.query_params.get('start')
+        end = request.query_params.get('end')
         if start and end:
-            startDate = datetime.datetime.strptime(start, "%Y-%m-%d-%H:%M")
-            endDate = datetime.datetime.strptime(end, "%Y-%m-%d-%H:%M")
+            start_date = datetime.datetime.strptime(start, '%Y-%m-%d-%H:%M')
+            end_date = datetime.datetime.strptime(end, '%Y-%m-%d-%H:%M')
 
             busy_machines = Booking.objects.filter(
-                Q(bookedFrom__lt=endDate) & Q(bookedUntil__gt=startDate)
+                Q(bookedFrom__lt=end_date) & Q(bookedUntil__gt=start_date)
             )
 
             machines = busy_machines.values_list('machine_id', flat=True)
 
-            queryset = Machine.objects.exclude(id__in=machines)
-            return queryset
-        return []
+            active_non_booked_machines = Machine.objects.exclude(
+                id__in=machines
+            ).filter(status=Machine.StatusEnum.ACTIVE)
+            serializer = self.get_serializer(
+                active_non_booked_machines, many=True
+            )
+            return Response(serializer.data)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    # в разработке :) не трогать
-    # @action(detail=True, methods=['get', 'post'])
-    # def book(self, request, pk):
-    #     start = request.query_params.get("start")
-    #     end = request.query_params.get("end")
-    #     if start and end:
-    #         machine = Machine.objects.get(id=pk)
-    #         machine.status = "booking"
-    #         machine.save()
-    #
-    #         newBook = Booking.objects.create(machine=machine,
-    #                                          ownedBy=request.user,
-    #                                          start=start,
-    #                                          end=end)
-    #         newBook.save()
-    #         return Response(status=status.HTTP_200_OK)
-    #     return {}
-    #
-    # @action(detail=False, methods=['get'])
-    # def available(self, request):
-    #     queryset = Machine.objects.filter(status='Active')
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
 
-    # @action(detail=False, methods=['get'])
-    # def my(self, request):
-    #     now = datetime.datetime.now()
-    #     machines = Booking.objects.filter(
-    #         Q(bookedBy=request.user) & Q(bookedUntil__lt=now)
-    #     )
-    #     queryset = machines.values_list('machine_id', flat=True)
-    #     serializer = self.get_serializer(queryset, many=True)
-    #     return Response(serializer.data)
+    @action(detail=False, methods=['GET'])
+    def my(self, request):
+        now = datetime.datetime.now()
+        user_current_bookings = Booking.objects.filter(
+            Q(bookedBy=request.user) & Q(bookedUntil__gt=now)
+        )
+        user_machines = user_current_bookings.values_list('machine_id', flat=True)
+        user_machines = Machine.objects.filter(Q(pk__in=user_machines))
+        serializer = self.get_serializer(user_machines, many=True)
+        return Response(serializer.data)
 
 
 class BookingViewSet(viewsets.ModelViewSet):
