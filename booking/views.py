@@ -1,6 +1,5 @@
 from django.db.models import Q
 import datetime
-from django.contrib.auth.models import Group, User
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -8,8 +7,6 @@ from rest_framework.response import Response
 from .models import Machine, Booking
 from .serializers import (
     MachineSerializer,
-    GroupSerializer,
-    UserSerializer,
     BookingSerializer,
 )
 from .permissions import IsOwner, IsSuperUser
@@ -21,7 +18,7 @@ class MachineViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     # мы игнорируем то состояние, когда человек без проверки на то, что
-    # машина свободна её бргнирует.
+    # машина свободна её бронирует.
     @action(detail=True, methods=['get', 'post'])
     def book(self, request, pk):
         start = request.query_params.get('start', '')
@@ -34,6 +31,8 @@ class MachineViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if start_datetime and end_datetime:
+            if end_datetime < start_datetime:
+                return Response(status=status.HTTP_400_BAD_REQUEST)
             try:
                 machine = Machine.objects.get(id=pk)
             except Machine.DoesNotExist:
@@ -76,7 +75,6 @@ class MachineViewSet(viewsets.ModelViewSet):
             return Response(serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-
     @action(detail=False, methods=['GET'])
     def my(self, request):
         now = datetime.datetime.now()
@@ -112,15 +110,3 @@ class BookingViewSet(viewsets.ModelViewSet):
         queryset = Booking.objects.filter(bookedBy=request.user)
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-
-
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-
-class GroupViewSet(viewsets.ModelViewSet):
-    queryset = Group.objects.all().order_by('name')
-    serializer_class = GroupSerializer
-    permission_classes = [permissions.IsAuthenticated]
