@@ -1,4 +1,4 @@
-from django.core.serializers import serialize
+from django.utils.timezone import now
 from django.db.models import Q
 import datetime
 from rest_framework import viewsets, permissions, status
@@ -19,6 +19,24 @@ class MachineViewSet(viewsets.ModelViewSet):
     serializer_class = MachineSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def updateMachines(self):
+        for book in Booking.objects.filter(booked=True):
+            if book.bookedUntil >= now():
+                try:
+                    machine = Machine.objects.get(id=book.machine_id)
+                except Machine.DoesNotExist:
+                    continue
+                machine.status = Machine.StatusEnum.ACTIVE
+                book.booked = False
+                machine.save()
+                book.save()
+
+    def list(self, request, *args, **kwargs):
+        self.updateMachines()
+        machines = Machine.objects.all()
+        serializer = self.serializer_class(machines, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
     @action(detail=True, methods=['get', 'post'])
     def book(self, request, pk):
         start = request.query_params.get('start', '')
@@ -31,8 +49,8 @@ class MachineViewSet(viewsets.ModelViewSet):
         except ValueError:
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if start_datetime and end_datetime:
-            if end_datetime < start_datetime:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if end_datetime < start_datetime and end_datetime < now():
+                return Response({'message': 'The data is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
             try:
                 machine = Machine.objects.get(id=pk)
             except Machine.DoesNotExist:
@@ -52,6 +70,16 @@ class MachineViewSet(viewsets.ModelViewSet):
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response({'message': 'This machine is not available'}, status=status.HTTP_400_BAD_REQUEST)
         return {}
+
+    @action(detail=True, methods=['get', 'post'])
+    def reinstall(self, request, pk):
+        try:
+            machine = Machine.objects.get(id=pk)
+        except Machine.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        machine.status = Machine.StatusEnum.REINSTALLING
+        machine.save()
+        return Response({'message': 'The machine will be update'}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['GET'])
     def available(self, request):

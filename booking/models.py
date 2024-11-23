@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 class Machine(models.Model):
     class StatusEnum(models.TextChoices):
-        ACTIVE = 'ACTVIE', _('Active')
+        ACTIVE = 'ACTIVE', _('Active')
         BOOKED = 'BOOKED', _('Booked')
         REINSTALLING = 'REINSTALLING', _('Reinstalling')
 
@@ -32,3 +32,4 @@ class Booking(models.Model):
     bookedBy = models.ForeignKey(User, on_delete=models.CASCADE)
     bookedFrom = models.DateTimeField()
     bookedUntil = models.DateTimeField()
+    booked = models.BooleanField(default=True)

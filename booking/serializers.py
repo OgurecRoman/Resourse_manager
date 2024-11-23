@@ -24,4 +24,4 @@ class MachineSerializer(serializers.ModelSerializer):
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ["id", "machine", "bookedUntil", "bookedFrom"]
+        fields = ['id', 'machine', 'bookedUntil', 'bookedFrom', 'booked']
