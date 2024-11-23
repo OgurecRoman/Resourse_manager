@@ -1,7 +1,21 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework import routers
 
-import booking.views
+from booking.views import (
+    MachineViewSet,
+    UserViewSet,
+    GroupViewSet,
+    BookingViewSet,
+    book
+)
+
+router = routers.DefaultRouter()
+router.register(r'users', GroupViewSet)
+router.register(r'groups', UserViewSet)
+router.register(r'machines', MachineViewSet)
+router.register(r'bookings', BookingViewSet)
 
 urlpatterns = [
-    path('book/<int:pk>/', booking.views.book, name='book'),
+    path('', include(router.urls)),
+    path('book/<int:pk>/', book, name='book'),
 ]
