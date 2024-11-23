@@ -4,6 +4,7 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from booking.permissions import IsSuperUser
 from .serializers import (
     UserSerializer,
     GroupSerializer,
@@ -15,10 +16,9 @@ from .serializers import (
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated, IsSuperUser]
 
-    # permission_classes = [permissions.IsAuthenticated]
-
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def register(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -26,9 +26,9 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({
                 "message": "User registered successfully"
             }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def login(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -44,7 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
     def logout(self, request):
         logout(request)
         return Response({
