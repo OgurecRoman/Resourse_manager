@@ -44,7 +44,7 @@ class UserViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.IsAuthenticated])
+    @action(detail=False, methods=['get'], permission_classes=[permissions.IsAuthenticated])
     def logout(self, request):
         logout(request)
         return Response({
