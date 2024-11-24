@@ -1,8 +1,6 @@
-import datetime
-import os
-
 from django.utils.timezone import now
 from django.db.models import Q
+import datetime
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -21,7 +19,7 @@ class MachineViewSet(viewsets.ModelViewSet):
     serializer_class = MachineSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def update_machines(self):
+    def updateMachines(self):
         for book in Booking.objects.filter(booked=True):
             if book.bookedFrom <= now():
                 try:
@@ -47,7 +45,7 @@ class MachineViewSet(viewsets.ModelViewSet):
         return True
 
     def list(self, request, *args, **kwargs):
-        self.update_machines()
+        self.updateMachines()
         machines = Machine.objects.all()
         serializer = self.serializer_class(machines, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -65,10 +63,7 @@ class MachineViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_400_BAD_REQUEST)
         if start_datetime and end_datetime:
             if end_datetime < start_datetime and end_datetime < now():
-                return Response(
-                    {'message': 'The data is incorrect'},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+                return Response({'message': 'The data is incorrect'}, status=status.HTTP_400_BAD_REQUEST)
             try:
                 machine = Machine.objects.get(id=pk)
             except Machine.DoesNotExist:
@@ -83,10 +78,7 @@ class MachineViewSet(viewsets.ModelViewSet):
                 new_booking.save()
                 serializer = BookingSerializer(new_booking, many=False)
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(
-                {'message': 'This machine is not available'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            return Response({'message': 'This machine is not available'}, status=status.HTTP_400_BAD_REQUEST)
         return {}
 
     @action(detail=True, methods=['get', 'post'])
@@ -97,17 +89,10 @@ class MachineViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
         machine.status = Machine.StatusEnum.REINSTALLING
         machine.save()
-
-        os.system(f'sudo /tmp/reinstall.sh {machine.name}')
-
-        return Response(
-            {'message': 'The machine will be updated'},
-            status=status.HTTP_200_OK,
-        )
+        return Response({'message': 'The machine will be update'}, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=['GET'])
     def available(self, request):
-        self.update_machines()
         """Gets all machines that are not booked in specified time interval."""
         start = request.query_params.get('start')
         end = request.query_params.get('end')
@@ -124,56 +109,38 @@ class MachineViewSet(viewsets.ModelViewSet):
             active_non_booked_machines = Machine.objects.exclude(
                 id__in=machines
             )
-
             serializer = self.get_serializer(
                 active_non_booked_machines, many=True
             )
             return Response(serializer.data)
         return Response(status=status.HTTP_400_BAD_REQUEST)
 
-    @action(
-        detail=False,
-        methods=['POST'],
-        permission_classes=[IsAuthenticated, IsSuperUser],
-    )
+    @action(detail=False, methods=['POST'], permission_classes=[IsAuthenticated, IsSuperUser])
     def add(self, request):
         serializer = MachineSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response(
-                {
-                    'message': 'Machine was added successfully.',
-                },
-                status=status.HTTP_201_CREATED,
-            )
+            return Response({
+                "message": "Machine was added successfully.",
+            }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    @action(
-        detail=True,
-        methods=['GET', 'DELETE'],
-        permission_classes=[IsAuthenticated, IsSuperUser],
-    )
+    @action(detail=True, methods=['GET', 'DELETE'], permission_classes=[IsAuthenticated, IsSuperUser])
     def delete(self, request, pk):
         try:
             machine = Machine.objects.get(id=pk)
             machine.delete()
-            return Response(
-                {'message': 'Machine was deleted successfully.'},
-                status=status.HTTP_200_OK,
-            )
+            return Response({'message': 'Machine was deleted successfully.'}, status=status.HTTP_200_OK)
         except Machine.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
     @action(detail=False, methods=['GET'])
     def my(self, request):
-        self.update_machines()
         now = datetime.datetime.now()
         user_current_bookings = Booking.objects.filter(
             Q(bookedBy=request.user) & Q(bookedUntil__gt=now)
         )
-        user_machines = user_current_bookings.values_list(
-            'machine_id', flat=True
-        )
+        user_machines = user_current_bookings.values_list('machine_id', flat=True)
         user_machines = Machine.objects.filter(Q(pk__in=user_machines))
         serializer = self.get_serializer(user_machines, many=True)
         return Response(serializer.data)
