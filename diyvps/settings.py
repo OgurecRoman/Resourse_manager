@@ -19,7 +19,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'booking.apps.BookingConfig',
     'users.apps.UsersConfig',
-    'homepage.apps.HomepageConfig',
     'rest_framework',
 ]
 
@@ -35,12 +34,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'diyvps.urls'
 
-TEMPLATES_DIRS = BASE_DIR / "templates"
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [TEMPLATES_DIRS],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -96,8 +93,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / 'static']
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

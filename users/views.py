@@ -18,7 +18,7 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated, IsSuperUser]
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='register')
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def register(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
@@ -28,7 +28,7 @@ class UserViewSet(viewsets.ModelViewSet):
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
 
-    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny], url_path='login')
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
     def login(self, request):
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():

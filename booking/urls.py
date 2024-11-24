@@ -7,7 +7,7 @@ from booking.views import (
 )
 
 router = routers.DefaultRouter()
-router.register(r'machines', MachineViewSet, basename='machines')
+router.register(r'machines', MachineViewSet, basename='machine')
 router.register(r'booking', BookingViewSet, basename='booking')
 
 urlpatterns = [
