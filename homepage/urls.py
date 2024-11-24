@@ -1,13 +1,10 @@
 from django.urls import path, include
 from rest_framework import routers
-from users.views import (
-    UserViewSet,
-    GroupViewSet,
-)
+
+from homepage.views import HomepageViewSet
 
 router = routers.DefaultRouter()
-router.register(r'', UserViewSet, basename='users')
-router.register(r'groups', GroupViewSet)
+router.register(r'', HomepageViewSet, basename='homepage')
 
 urlpatterns = [
     path('', include(router.urls)),

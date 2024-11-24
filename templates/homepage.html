@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block style %}<link rel="stylesheet" href="{% static 'css/home.css' %}">{% endblock %}
+
+{% block content %}
+    <section class="content__home">
+        <div class="devis">
+            <h2 class="devis__1">Разверните свой сервер</h2>
+            <h2 class="devis__2">За пару кликов</h2>
+        </div>
+        <div class="button__menu">
+            <a href="{% url 'users-register' %}">
+                <div class="button__link">Зарегестрироваться</div>
+            </a>
+            <a href="{% url 'users-login' %}">
+                <div class="button__link">Войти</div>
+            </a>
+        </div>
+    </section>
+    <script src="../static/scripts/home.js"></script>
+{% endblock %}
+

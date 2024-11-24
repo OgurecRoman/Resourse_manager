@@ -1,0 +1,34 @@
+.content__form {
+  width:100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction:column;
+  min-height:720px;
+  background-color: #F8EFFA;
+}
+
+/* Стили для input и textarea */
+input, textarea {
+    width: 100%; /* Поля занимают всю ширину */
+    padding: 10px; /* Внутренние отступы */
+    border: 1px solid #ccc; /* Граница */
+    border-radius: 5px; /* Скругленные углы */
+    font-size: 14px; /* Размер шрифта */
+    box-sizing: border-box; /* Учитываем отступы и границы */
+}
+
+/* Стили для кнопки */
+.submit__button {
+  width: 192.5px;
+  height: 30px;
+  font-size:20px;
+  color:#ff2f2f;
+  border: 2px solid #D51919;
+  border-radius: 15px;
+}
+
+.submit__button:hover{
+  background-color: #D51919;
+  color:white;
+}

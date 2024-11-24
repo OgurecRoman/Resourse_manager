@@ -1,0 +1,46 @@
+.content__home{
+  display:flex;
+  flex-direction:column;
+  align-items: center;
+  background-color:#F8EFFA;
+  width:100%;
+  min-height: 720px;
+
+}
+
+.devis__1{
+  margin-top:150px;
+  height:60px;
+  font-size:60px;
+}
+
+.devis__2{
+  text-align: center;
+  font-size:60px;
+  height:60px;
+  color:#D51919;
+}
+
+.button__menu{
+  width:100%;
+  display: flex;
+  flex-direction:column;
+  justify-content: space-between;
+
+}
+
+.button__link{
+  margin:auto;
+  margin-bottom:20px;
+  font-size:20px;
+  color:#ff2f2f;
+  border: 2px solid #D51919;
+  border-radius: 15px;
+  width:50%;
+  text-align: center;
+}
+
+.button__link:hover{
+  background-color: #D51919;
+  color:white;
+}
