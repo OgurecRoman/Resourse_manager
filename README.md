@@ -48,3 +48,12 @@ python3 manage.py migrate # применить миграцию
 python3 manage.py runserver
 ```
 
+# Запуск фронта
+
+```bash
+npm install
+```
+```bash
+npm run dev
+```
+
