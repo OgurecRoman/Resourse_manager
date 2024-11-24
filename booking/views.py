@@ -19,20 +19,17 @@ class MachineViewSet(viewsets.ModelViewSet):
     serializer_class = MachineSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def updateMachines(self):
+    def update_machines(self):
         for book in Booking.objects.filter(booked=True):
-            if book.bookedUntil >= now():
-                try:
-                    machine = Machine.objects.get(id=book.machine_id)
-                except Machine.DoesNotExist:
-                    continue
+            if book.bookedUntil > now():
+                machine = Machine.objects.get(id=book.machine_id)
                 machine.status = Machine.StatusEnum.ACTIVE
                 book.booked = False
                 machine.save()
                 book.save()
 
     def list(self, request, *args, **kwargs):
-        self.updateMachines()
+        self.update_machines()
         machines = Machine.objects.all()
         serializer = self.serializer_class(machines, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -92,11 +89,10 @@ class MachineViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def available(self, request):
-        print(request.user)
+        self.update_machines()
         """Gets all machines that are not booked in specified time interval."""
         start = request.query_params.get('start')
         end = request.query_params.get('end')
-        print(start, end)
         if start and end:
             start_date = datetime.datetime.strptime(start, '%Y-%m-%d-%H:%M')
             end_date = datetime.datetime.strptime(end, '%Y-%m-%d-%H:%M')
@@ -107,9 +103,8 @@ class MachineViewSet(viewsets.ModelViewSet):
 
             machines = busy_machines.values_list('machine_id', flat=True)
 
-            active_non_booked_machines = Machine.objects.exclude(
-                id__in=machines
-            ).filter(status=Machine.StatusEnum.ACTIVE)
+            active_non_booked_machines = Machine.objects.all().filter(status="ACTIVE")
+
             serializer = self.get_serializer(
                 active_non_booked_machines, many=True
             )
@@ -151,6 +146,7 @@ class MachineViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def my(self, request):
+        self.update_machines()
         now = datetime.datetime.now()
         user_current_bookings = Booking.objects.filter(
             Q(bookedBy=request.user) & Q(bookedUntil__gt=now)
