@@ -91,7 +91,7 @@ class MachineViewSet(viewsets.ModelViewSet):
         machine.save()
         return Response({'message': 'The machine will be update'}, status=status.HTTP_200_OK)
 
-    @action(detail=False, methods=['GET'])
+    @action(detail=False, methods=['GET'], url_path='available')
     def available(self, request):
         """Gets all machines that are not booked in specified time interval."""
         start = request.query_params.get('start')
