@@ -7,6 +7,7 @@ class MachineSerializer(serializers.ModelSerializer):
         model = Machine
         fields = (
             'pk',
+            'name',
             'password',
             'status',
             'cpuCores',
@@ -17,7 +18,6 @@ class MachineSerializer(serializers.ModelSerializer):
             'bandwidth',
             'operatingSystem',
             'status',
-            'name',
         )
 
 

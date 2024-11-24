@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'booking.apps.BookingConfig',
     'users.apps.UsersConfig',
     'rest_framework',
-    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -31,10 +30,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
 ]
-
 
 ROOT_URLCONF = 'diyvps.urls'
 
@@ -97,23 +93,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
 }
 
-CSRF_COOKIE_SAMESITE = 'Strict'
-SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_HTTPONLY = False
-
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-]
-CORS_ALLOW_METHODS = [
-    'DELETE',
-    'GET',
-    'OPTIONS',
-    'PATCH',
-    'POST',
-    'PUT',
-]
 STATIC_URL = 'static/'
 
-CORS_ALLOW_CREDENTIALS = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
