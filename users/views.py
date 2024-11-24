@@ -31,6 +31,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 {'message': 'User registered successfully'},
                 status=status.HTTP_201_CREATED,
             )
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_409_CONFLICT)
 
     @action(
@@ -39,7 +40,6 @@ class UserViewSet(viewsets.ModelViewSet):
         permission_classes=[permissions.AllowAny],
     )
     def loginn(self, request):
-        print('here')
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
@@ -60,7 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(
         detail=False,
         methods=['get'],
-        permission_classes=[],
+        permission_classes=[permissions.IsAuthenticated],
     )
     def logoutt(self, request):
         logout(request)
