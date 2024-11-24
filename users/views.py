@@ -23,7 +23,7 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['post'],
         permission_classes=[permissions.AllowAny],
     )
-    def register(self, request):
+    def registerr(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -38,8 +38,8 @@ class UserViewSet(viewsets.ModelViewSet):
         methods=['post'],
         permission_classes=[permissions.AllowAny],
     )
-    def login(self, request):
-        print(request)
+    def loginn(self, request):
+        print('here')
         serializer = UserLoginSerializer(data=request.data)
         if serializer.is_valid():
             username = serializer.validated_data['username']
@@ -52,18 +52,17 @@ class UserViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_200_OK,
                 )
             return Response(
-                {'error': 'Неверное имя пользователя или пароль.'},
+                {'error': 'Wrong credentials.'},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,
-        methods=['post'],
-        permission_classes=[permissions.IsAuthenticated],
+        methods=['get'],
+        permission_classes=[],
     )
-    def logout(self, request):
-        print(request.user)
+    def logoutt(self, request):
         logout(request)
         return Response(
             {'message': 'User logout successfully'}, status=status.HTTP_200_OK
