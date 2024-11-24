@@ -1,6 +1,8 @@
+import datetime
+import os
+
 from django.utils.timezone import now
 from django.db.models import Q
-import datetime
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -95,6 +97,9 @@ class MachineViewSet(viewsets.ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
         machine.status = Machine.StatusEnum.REINSTALLING
         machine.save()
+
+        os.system(f'sudo /tmp/reinstall.sh {machine.name}')
+
         return Response(
             {'message': 'The machine will be updated'},
             status=status.HTTP_200_OK,
