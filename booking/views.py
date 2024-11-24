@@ -21,12 +21,28 @@ class MachineViewSet(viewsets.ModelViewSet):
 
     def update_machines(self):
         for book in Booking.objects.filter(booked=True):
-            if book.bookedUntil > now():
-                machine = Machine.objects.get(id=book.machine_id)
+            if book.bookedFrom <= now():
+                try:
+                    machine = Machine.objects.get(id=book.machine_id)
+                except Machine.DoesNotExist:
+                    continue
+                machine.status = Machine.StatusEnum.BOOKED
+                machine.save()
+            if book.bookedUntil <= now():
+                try:
+                    machine = Machine.objects.get(id=book.machine_id)
+                except Machine.DoesNotExist:
+                    continue
                 machine.status = Machine.StatusEnum.ACTIVE
                 book.booked = False
                 machine.save()
-                book.save()
+            book.save()
+
+    def chechAvailiable(self, machine, start, end):
+        for book in Booking.objects.filter(machine=machine, booked=True):
+            if not (end <= book.bookedFrom or start >= book.bookedUntil):
+                return False
+        return True
 
     def list(self, request, *args, **kwargs):
         self.update_machines()
@@ -55,10 +71,7 @@ class MachineViewSet(viewsets.ModelViewSet):
                 machine = Machine.objects.get(id=pk)
             except Machine.DoesNotExist:
                 return Response(status.HTTP_404_NOT_FOUND)
-            if machine.status == 'ACTIVE':
-                machine.status = Machine.StatusEnum.BOOKED
-                machine.save()
-
+            if self.chechAvailiable(machine, start_datetime, end_datetime):
                 new_booking = Booking.objects.create(
                     machine=machine,
                     bookedBy=request.user,
@@ -103,8 +116,9 @@ class MachineViewSet(viewsets.ModelViewSet):
 
             machines = busy_machines.values_list('machine_id', flat=True)
 
-            active_non_booked_machines = Machine.objects.all().filter(status="ACTIVE")
-
+            active_non_booked_machines = Machine.objects.exclude(
+                id__in=machines
+            )
             serializer = self.get_serializer(
                 active_non_booked_machines, many=True
             )
